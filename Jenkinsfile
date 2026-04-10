@@ -26,7 +26,7 @@ pipeline {
             steps {
                 echo "==> Installing dependencies and running tests..."
                 bat """
-                    pip install --quiet --break-system-packages flask pytest requests prometheus-client waitress
+                    pip install --quiet -r requirements.txt
                     python -m pytest tests/ -v --tb=short
                 """
             }
@@ -43,7 +43,10 @@ pipeline {
             }
             steps {
                 echo "==> Training model..."
-                bat "python src/train.py"
+                bat """
+                    set MLFLOW_TRACKING_URI=http://localhost:5000
+                    python src/train.py
+                """
             }
         }
 
@@ -51,7 +54,7 @@ pipeline {
         stage("Build Docker Image") {
             steps {
                 echo "==> Building Docker image: ${IMAGE_NAME}:${IMAGE_TAG}..."
-                bat "docker build -t \${IMAGE_NAME}:\${IMAGE_TAG} -t \${IMAGE_NAME}:latest ."
+                bat "docker build -t %IMAGE_NAME%:%IMAGE_TAG% -t %IMAGE_NAME%:latest ."
             }
         }
 
@@ -68,11 +71,12 @@ pipeline {
         // Stage 6: Verify deployment is healthy
         stage("Health Check") {
             steps {
-                echo "==> Waiting for API to start..."
-                bat """
-                    sleep 10
-                    curl --fail http://flask-api:5001/health || curl --fail http://localhost:5001/health || exit 1
-                    echo "API is healthy!"
+                echo "==> Waiting for API to start and load model..."
+                // Using PowerShell for a more reliable sleep and curl alternative on Windows
+                powershell """
+                    Start-Sleep -Seconds 20
+                    Invoke-WebRequest -Uri "http://localhost:5001/health" -UseBasicParsing
+                    Write-Host "API is healthy!"
                 """
             }
         }
