@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Data & Models (large files — store in DVC/S3)
+data/True.csv
+data/Fake.csv
+
+# Logs
+logs/
+*.log
+
+# MLflow artifacts
+mlruns/
+mlflow.db
+
+# Docker
+.docker/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
