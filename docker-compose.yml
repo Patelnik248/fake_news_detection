@@ -1,0 +1,85 @@
+version: "3.9"
+
+services:
+
+  # ── 1. Flask API (Flask + Waitress) ──────────────────────────
+  flask-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: flask-api
+    ports:
+      - "5001:5001"
+    volumes:
+      - models-data:/app/models    # use named volume if needed or nothing since it's copied
+      - logs-data:/app/logs        # persist logs
+    environment:
+      - PORT=5001
+    networks:
+      - app-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c",
+             "import urllib.request; urllib.request.urlopen('http://localhost:5001/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ── 2. NGINX Reverse Proxy ────────────────────────────────────
+  nginx:
+    build: ./nginx
+    container_name: nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - flask-api
+    networks:
+      - app-network
+    restart: unless-stopped
+
+
+
+  # ── 3. Prometheus Metrics ─────────────────────────────────────
+  prometheus:
+    build: ./monitoring
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - prometheus-data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.retention.time=15d"
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  # ── 4. Grafana Dashboard ──────────────────────────────────────
+  grafana:
+    build: ./monitoring/grafana
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+      - GF_AUTH_ANONYMOUS_ENABLED=false
+    depends_on:
+      - prometheus
+    networks:
+      - app-network
+    restart: unless-stopped
+
+# ── Named volumes ─────────────────────────────────────────────
+volumes:
+  prometheus-data:
+  grafana-data:
+  models-data:
+  logs-data:
+
+# ── Shared network ────────────────────────────────────────────
+networks:
+  app-network:
+    driver: bridge
