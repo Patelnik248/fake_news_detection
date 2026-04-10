@@ -6,8 +6,8 @@ __pycache__/
 venv/
 
 # Data & Models (large files — store in DVC/S3)
-data/True.csv
-data/Fake.csv
+# data/True.csv
+# data/Fake.csv
 
 # Logs
 logs/

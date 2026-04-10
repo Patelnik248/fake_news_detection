@@ -1,0 +1,22 @@
+global:
+  scrape_interval:     15s   # how often to pull metrics
+  evaluation_interval: 15s   # how often to evaluate rules
+
+# ── Scrape jobs (each job pulls from one target) ──────────────
+scrape_configs:
+
+  # 1. Prometheus itself
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  # 2. Flask API (exposes /metrics via prometheus-client)
+  - job_name: "flask-api"
+    static_configs:
+      - targets: ["flask-api:5001"]
+    metrics_path: "/metrics"
+
+  # 3. NGINX (if nginx-prometheus-exporter is added)
+  # - job_name: "nginx"
+  #   static_configs:
+  #     - targets: ["nginx-exporter:9113"]

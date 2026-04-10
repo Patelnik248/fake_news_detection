@@ -1,0 +1,8 @@
+# Auto-provision the dashboard JSON on Grafana startup
+apiVersion: 1
+providers:
+  - name: default
+    type: file
+    updateIntervalSeconds: 10
+    options:
+      path: /etc/grafana/provisioning/dashboards
