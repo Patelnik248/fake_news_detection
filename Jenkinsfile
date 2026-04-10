@@ -8,6 +8,9 @@ pipeline {
         IMAGE_NAME    = "fake-news-api"
         IMAGE_TAG     = "${BUILD_NUMBER}"
         COMPOSE_FILE  = "docker-compose.yml"
+        // Absolute paths for Jenkins service compatibility
+        PYTHON_EXE    = "C:\\Users\\inspi\\anaconda3\\python.exe"
+        PIP_EXE       = "C:\\Users\\inspi\\anaconda3\\Scripts\\pip.exe"
     }
 
     // ── Pipeline Stages ───────────────────────────────────────
@@ -26,8 +29,8 @@ pipeline {
             steps {
                 echo "==> Installing dependencies and running tests..."
                 bat """
-                    pip install --quiet -r requirements.txt
-                    python -m pytest tests/ -v --tb=short
+                    "%PIP_EXE%" install --quiet -r requirements.txt
+                    "%PYTHON_EXE%" -m pytest tests/ -v --tb=short
                 """
             }
         }
@@ -45,7 +48,7 @@ pipeline {
                 echo "==> Training model..."
                 bat """
                     set MLFLOW_TRACKING_URI=http://localhost:5000
-                    python src/train.py
+                    "%PYTHON_EXE%" src/train.py
                 """
             }
         }
