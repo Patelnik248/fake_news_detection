@@ -16,6 +16,8 @@ services:
     environment:
       - PORT=5001
       - MLFLOW_TRACKING_URI=http://host.docker.internal:5000
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
       - app-network
     restart: unless-stopped
@@ -34,6 +36,8 @@ services:
       - "80:80"
     depends_on:
       - flask-api
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
       - app-network
     restart: unless-stopped
@@ -51,6 +55,8 @@ services:
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
       - "--storage.tsdb.retention.time=15d"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
       - app-network
     restart: unless-stopped
