@@ -55,8 +55,33 @@ def load_best_model():
     best = get_best_run()
     if not best:
         raise RuntimeError("No runs found. Train first.")
+    
+    # ── 1. Try URL scheme (standard MLflow) ─────────────────────
     uri = f"runs:/{best.info.run_id}/model"
-    return mlflow.sklearn.load_model(uri)
+    
+    try:
+        # We try loading with a very short timeout concept (manual check)
+        return mlflow.sklearn.load_model(uri)
+    except Exception as e:
+        print(f"[MLflow] Remote load failed ({e}). Checking local artifact root...")
+        
+        # ── 2. Fallback: Manual Local Path Discovery ─────────────
+        # This bypasses the MLflow Artifact Proxy which often hangs on local Windows setups
+        run_id = best.info.run_id
+        
+        # Search in known local locations
+        possible_paths = [
+            f"mlartifacts/1/{run_id}/artifacts/model",
+            f"mlartifacts/1/models/m-{run_id}",               # seen in user environment
+            f"mlruns/1/{run_id}/artifacts/model",
+        ]
+        
+        for path in possible_paths:
+            if os.path.exists(path):
+                print(f"[MLflow] Found local artifact at: {path}")
+                return mlflow.sklearn.load_model(path)
+                
+        raise RuntimeError(f"Could not load model for run {run_id} via MLflow or local search.")
 
 
 if __name__ == "__main__":

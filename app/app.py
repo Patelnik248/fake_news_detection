@@ -7,8 +7,11 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 from flask import Flask, request, jsonify, send_from_directory
 from waitress import serve
 from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
+import mlflow
+import mlflow.sklearn
 
 from src.model import load_model, predict
+from tracking.mlflow_setup import load_best_model
 
 # ── Logging Setup ─────────────────────────────────────────────
 os.makedirs("logs", exist_ok=True)
@@ -39,6 +42,11 @@ PREDICTION_COUNT = Counter(
     ["result"]  # "real" or "fake"
 )
 
+# ── Paths ─────────────────────────────────────────────────────
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+STATIC_DIR = os.path.join(BASE_DIR, "static")
+
+
 # ── Flask App ─────────────────────────────────────────────────
 app = Flask(__name__)
 
@@ -46,12 +54,25 @@ app = Flask(__name__)
 model = None
 
 def get_model():
-    """Lazy-load the model — only once."""
+    """Lazy-load the model — tries MLflow first, then Local File."""
     global model
     if model is None:
-        logger.info("Loading model from disk...")
-        model = load_model()
-        logger.info("Model loaded successfully.")
+        # ── 1. Try MLflow first ────────────────────────────────
+        try:
+            logger.info("Connecting to MLflow Tracking Server...")
+            model = load_best_model()
+            logger.info("Successfully loaded best model from MLflow.")
+        except Exception as e:
+            logger.warning(f"MLflow fetch failed ({e}). Falling back to local file.")
+            
+            # ── 2. Fallback to local model.pkl ────────────────
+            try:
+                model = load_model()
+                logger.info("Successfully loaded model from local disk.")
+            except Exception as e_local:
+                logger.error(f"Critical error: No model available. {e_local}")
+                raise e_local
+                
     return model
 
 
@@ -145,7 +166,13 @@ def api_info():
 @app.route("/", methods=["GET"])
 def index():
     """Serves the modern frontend UI."""
-    return send_from_directory("static", "index.html")
+    return send_from_directory(STATIC_DIR, "index.html")
+
+
+@app.route("/<path:path>")
+def static_proxy(path):
+    """Serve static files from the root for better compatibility."""
+    return send_from_directory(STATIC_DIR, path)
 
 
 # ── Start Server ──────────────────────────────────────────────

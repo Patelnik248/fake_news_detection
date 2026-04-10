@@ -1,5 +1,5 @@
 # ── Stage 1: Base image ───────────────────────────────────────
-FROM python:3.11-slim AS base
+FROM python:3.11-slim-bullseye AS base
 
 # Set working directory inside the container
 WORKDIR /app
@@ -10,6 +10,7 @@ RUN pip install --no-cache-dir --timeout=300 --retries=3 -r requirements.txt
 
 # ── Stage 3: Copy application code ───────────────────────────
 COPY src/         ./src/
+COPY tracking/    ./tracking/
 COPY app/app.py   ./app/app.py
 COPY app/static/  ./app/static/
 COPY models/      ./models/

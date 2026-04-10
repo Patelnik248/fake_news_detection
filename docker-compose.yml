@@ -11,10 +11,11 @@ services:
     ports:
       - "5001:5001"
     volumes:
-      - models-data:/app/models    # use named volume if needed or nothing since it's copied
-      - logs-data:/app/logs        # persist logs
+      - models-data:/app/models
+      - logs-data:/app/logs
     environment:
       - PORT=5001
+      - MLFLOW_TRACKING_URI=http://host.docker.internal:5000
     networks:
       - app-network
     restart: unless-stopped
