@@ -1,0 +1,41 @@
+# ── Git ───────────────────────────────────────────────────────
+.git
+.gitignore
+
+# ── Python ────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+env/
+.venv/
+venv/
+ENV/
+*.egg-info/
+.eggs/
+
+# ── Tests & Coverage ──────────────────────────────────────────
+.pytest_cache/
+.tox/
+.coverage
+.coverage.*
+htmlcov/
+
+# ── Data & ML Artifacts ───────────────────────────────────────
+# Explicitly ignore large datasets and local tracking data
+data/
+mlflow.db
+mlartifacts/
+logs/
+
+# ── IDE & System ──────────────────────────────────────────────
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# ── Docker ────────────────────────────────────────────────────
+# Ignore docker files from build context to keep it clean
+Dockerfile
+docker-compose.yml
+.dockerignore
