@@ -18,12 +18,12 @@
       "options": { "legend": { "displayMode": "list", "placement": "bottom" } },
       "targets": [
         {
-          "expr": "rate(api_request_count_total[5m])",
+          "expr": "rate(api_request_count_total[1m])",
           "legendFormat": "{{endpoint}} {{status}}",
           "refId": "A"
         }
       ],
-      "title": "API Request Rate (per 5m)",
+      "title": "API Request Rate (per 1m)",
       "type": "timeseries"
     },
     {
@@ -35,12 +35,12 @@
       "id": 2,
       "targets": [
         {
-          "expr": "histogram_quantile(0.95, rate(api_request_latency_seconds_bucket[5m]))",
+          "expr": "histogram_quantile(0.95, rate(api_request_latency_seconds_bucket[1m]))",
           "legendFormat": "p95 latency",
           "refId": "A"
         },
         {
-          "expr": "histogram_quantile(0.50, rate(api_request_latency_seconds_bucket[5m]))",
+          "expr": "histogram_quantile(0.50, rate(api_request_latency_seconds_bucket[1m]))",
           "legendFormat": "p50 latency",
           "refId": "B"
         }
@@ -55,7 +55,7 @@
       "id": 3,
       "targets": [
         {
-          "expr": "rate(api_prediction_count_total[5m])",
+          "expr": "rate(api_prediction_count_total[1m])",
           "legendFormat": "{{result}} predictions",
           "refId": "A"
         }
@@ -70,7 +70,7 @@
       "id": 4,
       "targets": [
         {
-          "expr": "rate(api_request_count_total{status=~'5..'}[5m])",
+          "expr": "rate(api_request_count_total{status=~'5..'}[1m])",
           "legendFormat": "5xx errors",
           "refId": "A"
         }
