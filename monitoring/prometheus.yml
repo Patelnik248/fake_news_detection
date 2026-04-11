@@ -16,7 +16,4 @@ scrape_configs:
       - targets: ["flask-api:5001"]
     metrics_path: "/metrics"
 
-  # 3. NGINX (if nginx-prometheus-exporter is added)
-  # - job_name: "nginx"
-  #   static_configs:
-  #     - targets: ["nginx-exporter:9113"]
+
